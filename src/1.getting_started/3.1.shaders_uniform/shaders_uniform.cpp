@@ -18,6 +18,7 @@ const char *vertexShaderSource ="#version 330 core\n"
     "   gl_Position = vec4(aPos, 1.0);\n"
     "}\0";
 
+// 改变绘制对西安颜色，在片段着色器这个小程序里面
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "uniform vec4 ourColor;\n"
@@ -25,6 +26,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "{\n"
     "   FragColor = ourColor;\n"
     "}\n\0";
+
 
 int main()
 {
@@ -65,6 +67,7 @@ int main()
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
+
     // check for shader compile errors
     int success;
     char infoLog[512];
@@ -74,10 +77,15 @@ int main()
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
+
+
+
+
     // fragment shader
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
+
     // check for shader compile errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
@@ -85,22 +93,30 @@ int main()
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
+
+
+
+
     // link shaders
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
+
     // check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
+
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+
+	// 存储着色器的初始值
     float vertices[] = {
          0.5f, -0.5f, 0.0f,  // bottom right
         -0.5f, -0.5f, 0.0f,  // bottom left
@@ -108,14 +124,16 @@ int main()
     };
 
     unsigned int VBO, VAO;
+	// 生成一个数据对象，等待被填充
     glGenVertexArrays(1, &VAO);
+	// 生成一个顶点缓存对象，用于存储顶点数据
     glGenBuffers(1, &VBO);
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    // 1.bind the Vertex Array Object first, 
+	// 2.then bind and set vertex buffer(s), 
+	// 3.and then configure vertex attributes(s).
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -145,14 +163,38 @@ int main()
         // be sure to activate the shader before any calls to glUniform
         glUseProgram(shaderProgram);
 
-        // update shader uniform
-        float timeValue = glfwGetTime();
-        float greenValue = sin(timeValue) / 2.0f + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		// 获得顶点着色器位置，获得变量，修改存储在里面的变量，然后要求着色器刷新
+		{
+			// update shader uniform
+			float timeValue = glfwGetTime();
+			// greenValue随时间变量变化
+			float greenValue = sin(timeValue) / 2.0f + 0.5f;
+			// uniform:是一个变量，这个宏就是获得变量location，然后返回
+			// uniform是cpu传递给显卡的shader这个小处理器的变量包装形式
+			// location：某一个着色器的位置，这个着色器里面存储的是这个变量
+			int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+			// 上面是获得变量存储位置，下main是对这个变量修改
+			glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		}
 
-        // render the triangle
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+		// 获得顶点着色器位置，获得变量，修改存储在里面的变量，然后要求着色器刷新
+		{
+			// update shader uniform
+			float timeValue = glfwGetTime();
+			// greenValue随时间变量变化
+			float greenValue = sin(timeValue) / 2.0f + 0.5f;
+			// uniform:是一个变量，这个宏就是获得变量location，然后返回
+			// uniform是cpu传递给显卡的shader这个小处理器的变量包装形式
+			// location：某一个着色器的位置，这个着色器里面存储的是这个变量
+			int vertexColorLocation = glGetUniformLocation(shaderProgram, "aPos");
+			// 上面是获得变量存储位置，下main是对这个变量修改
+			glUniform3f(0, greenValue, greenValue, greenValue);
+		}
+
+
+			// render the triangle
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+		
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
