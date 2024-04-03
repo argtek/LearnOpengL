@@ -53,7 +53,7 @@ int main()
 	// 这个函数的作用就是确定绑定这个窗口的线程
     glfwMakeContextCurrent(window);
 
-	// 设置回调函数，这恶鬼回调函数的作用就是告诉opengl帧缓冲是多少
+	// 设置回调函数，这个回调函数的作用就是告诉opengl帧缓冲是多少
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
